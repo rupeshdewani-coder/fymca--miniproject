@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Verify Phone - Lost and Found{% endblock %}
+
+{% block content %}
+<!-- Display OTP for development/testing purposes -->
+{% if session.current_otp %}
+<div class="alert alert-warning alert-dismissible fade show" role="alert">
+    <strong>Development Mode:</strong> OTP for testing is: <strong>{{ session.current_otp }}</strong>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endif %}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card floating">
+            <div class="card-header">
+                <h3 class="text-center"><i class="fas fa-phone-alt me-2"></i>Verify Phone Number</h3>
+            </div>
+            <div class="card-body">
+                <p class="text-center">We've sent a 6-digit verification code to {{ session.pending_registration.phone if session.pending_registration else 'your phone' }}.</p>
+                <p class="text-center">Please enter the code below to verify your phone number.</p>
+                
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="otp" class="form-label fw-bold">Verification Code</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-key"></i></span>
+                            <input type="text" class="form-control" id="otp" name="otp" placeholder="Enter 6-digit code" maxlength="6" required>
+                        </div>
+                        <div class="form-text">Didn't receive the code? 
+                            <button type="submit" name="resend_otp" value="1" class="btn btn-link p-0 m-0 align-baseline">Resend OTP</button>
+                        </div>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg pulse-button">
+                            <i class="fas fa-check-circle me-2"></i>Verify Phone
+                        </button>
+                    </div>
+                </form>
+                <div class="text-center mt-3">
+                    <p>Want to skip verification? <a href="{{ url_for('login') }}">Login here</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Benefits Section -->
+<div class="row justify-content-center mt-4">
+    <div class="col-md-6">
+        <div class="card floating">
+            <div class="card-header">
+                <h5><i class="fas fa-shield-alt me-2 text-success"></i>Why Verify Your Phone?</h5>
+            </div>
+            <div class="card-body">
+                <ul>
+                    <li>Enhanced account security</li>
+                    <li>Easy password recovery</li>
+                    <li>Instant notifications about your items</li>
+                    <li>Quick contact for item claims</li>
+                    <li>Priority support for verified users</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

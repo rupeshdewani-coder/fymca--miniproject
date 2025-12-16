@@ -1,0 +1,2 @@
+This directory is for additional images used in the Lost and Found application.
+Images are referenced from Unsplash and other online sources.

@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Verify Phone - Lost and Found{% endblock %}
+
+{% block content %}
+<!-- Display resent OTP message -->
+{% if resent_otp %}
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+    <strong>New OTP Generated:</strong> Your new verification code is: <strong>{{ resent_otp }}</strong>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+<script>
+    // Scroll to top to ensure the OTP is visible
+    window.scrollTo({top: 0, behavior: 'smooth'});
+</script>
+{% endif %}
+
+<!-- Display OTP for development/testing purposes -->
+{% if session.current_otp and not resent_otp %}
+<div class="alert alert-warning alert-dismissible fade show" role="alert">
+    <strong>Development Mode:</strong> OTP for testing is: <strong>{{ session.current_otp }}</strong>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endif %}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card floating">
+            <div class="card-header">
+                <h3 class="text-center"><i class="fas fa-phone-alt me-2"></i>Verify Phone Number</h3>
+            </div>
+            <div class="card-body">
+                <p class="text-center">We've sent a 6-digit verification code to {{ session.pending_registration.phone if session.pending_registration else 'your phone' }}.</p>
+                <p class="text-center">Please enter the code below to verify your phone number.</p>
+                
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="otp" class="form-label fw-bold">Verification Code</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-key"></i></span>
+                            <input type="text" class="form-control" id="otp" name="otp" placeholder="Enter 6-digit code" maxlength="6" required>
+                        </div>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg pulse-button">
+                            <i class="fas fa-check-circle me-2"></i>Verify Phone
+                        </button>
+                    </div>
+                </form>
+                
+                <form method="POST" class="mt-3">
+                    <div class="form-text">Didn't receive the code? 
+                        {% if otp_cooldown %}
+                        <span id="cooldown-timer" class="text-info">Resend available in <span id="countdown">{{ remaining_time }}</span> seconds</span>
+                        <button type="submit" name="resend_otp" value="1" class="btn btn-link p-0 m-0 align-baseline" disabled>Resend OTP</button>
+                        {% else %}
+                        <button type="submit" name="resend_otp" value="1" class="btn btn-link p-0 m-0 align-baseline">Resend OTP</button>
+                        {% endif %}
+                    </div>
+                </form>
+                <div class="text-center mt-3">
+                    <p>Want to skip verification? <a href="{{ url_for('login') }}">Login here</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if otp_cooldown %}
+<script>
+    // Countdown timer for OTP resend cooldown
+    let countdownElement = document.getElementById('countdown');
+    let cooldownTimer = parseInt(countdownElement.textContent);
+    
+    const countdownInterval = setInterval(() => {
+        cooldownTimer--;
+        countdownElement.textContent = cooldownTimer;
+        
+        if (cooldownTimer <= 0) {
+            clearInterval(countdownInterval);
+            // Reload the page to show the enabled resend button
+            location.reload();
+        }
+    }, 1000);
+</script>
+{% endif %}
+
+<!-- Benefits Section -->
+<div class="row justify-content-center mt-4">
+    <div class="col-md-6">
+        <div class="card floating">
+            <div class="card-header">
+                <h5><i class="fas fa-shield-alt me-2 text-success"></i>Why Verify Your Phone?</h5>
+            </div>
+            <div class="card-body">
+                <ul>
+                    <li>Enhanced account security</li>
+                    <li>Easy password recovery</li>
+                    <li>Instant notifications about your items</li>
+                    <li>Quick contact for item claims</li>
+                    <li>Priority support for verified users</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}Chat - {{ item.item_name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Chat</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Chat: {{ item.item_name }}</h4>
+                    <span class="badge bg-light text-dark">{{ item.status|title }}</span>
+                </div>
+                <div class="card-body">
+                    <!-- Chat messages container -->
+                    <div id="chat-messages" class="mb-3" style="height: 400px; overflow-y: auto;" data-user-id="{{ user.id }}" data-item-id="{{ item.id }}">
+                        {% if messages %}
+                            {% for message in messages %}
+                            <div class="mb-3 {% if message.sender_id == user.id %}text-end{% endif %}" data-message-id="{{ message.id }}">
+                                <div class="d-inline-block p-2 rounded {% if message.sender_id == user.id %}bg-primary text-white{% else %}bg-light{% endif %}" style="max-width: 70%;">
+                                    <small class="fw-bold {% if message.sender_id == user.id %}text-white{% else %}text-muted{% endif %}">{{ message.username }}</small>
+                                    <div>{{ message.message }}</div>
+                                    <small class="{% if message.sender_id == user.id %}text-white-50{% else %}text-muted{% endif %}">{{ message.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</small>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center text-muted">
+                                <p>No messages yet. Start the conversation!</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Message input form -->
+                    <form id="chat-form">
+                        <div class="input-group">
+                            <input type="text" id="message-input" class="form-control" placeholder="Type your message..." required>
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-paper-plane"></i> Send
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Socket.IO -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chatForm = document.getElementById('chat-form');
+    const messageInput = document.getElementById('message-input');
+    const chatMessages = document.getElementById('chat-messages');
+    const currentUserId = parseInt(chatMessages.getAttribute('data-user-id'));
+    const itemId = parseInt(chatMessages.getAttribute('data-item-id'));
+    const currentUsername = "{{ user.username }}";
+    
+    // Connect to Socket.IO
+    const socket = io.connect('http://' + document.domain + ':' + location.port);
+    
+    // Join the chat room
+    socket.emit('join', {
+        item_id: itemId,
+        user_id: currentUserId
+    });
+    
+    // Auto-scroll to bottom of chat
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+    // Listen for new messages
+    socket.on('receive_message', function(data) {
+        // Check if message already exists to avoid duplicates
+        const existingMessage = document.querySelector('[data-message-id="' + data.id + '"]');
+        if (!existingMessage) {
+            console.log('Adding new message:', data);
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'mb-3';
+            messageDiv.setAttribute('data-message-id', data.id);
+            if (data.sender_id == currentUserId) {
+                messageDiv.classList.add('text-end');
+            }
+            
+            // Create message content
+            const messageContent = document.createElement('div');
+            messageContent.className = 'd-inline-block p-2 rounded';
+            messageContent.style.maxWidth = '70%';
+            
+            if (data.sender_id == currentUserId) {
+                messageContent.classList.add('bg-primary', 'text-white');
+            } else {
+                messageContent.classList.add('bg-light');
+            }
+            
+            const usernameSmall = document.createElement('small');
+            usernameSmall.className = 'fw-bold';
+            if (data.sender_id == currentUserId) {
+                usernameSmall.classList.add('text-white');
+            } else {
+                usernameSmall.classList.add('text-muted');
+            }
+            usernameSmall.textContent = data.username;
+            
+            const messageText = document.createElement('div');
+            messageText.textContent = data.message;
+            
+            const timeSmall = document.createElement('small');
+            if (data.sender_id == currentUserId) {
+                timeSmall.classList.add('text-white-50');
+            } else {
+                timeSmall.classList.add('text-muted');
+            }
+            timeSmall.textContent = data.timestamp;
+            
+            messageContent.appendChild(usernameSmall);
+            messageContent.appendChild(messageText);
+            messageContent.appendChild(timeSmall);
+            
+            messageDiv.appendChild(messageContent);
+            chatMessages.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+    });
+    
+    // Listen for status messages
+    socket.on('status', function(data) {
+        console.log('Status:', data.msg);
+    });
+    
+    // Listen for error messages
+    socket.on('error', function(data) {
+        console.error('Error:', data.msg);
+        alert('Error: ' + data.msg);
+    });
+    
+    // Handle form submission
+    chatForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const message = messageInput.value.trim();
+        if (!message) return;
+        
+        // Send message via Socket.IO
+        socket.emit('send_message', {
+            item_id: itemId,
+            user_id: currentUserId,
+            username: currentUsername,
+            message: message
+        });
+        
+        // Clear input
+        messageInput.value = '';
+    });
+    
+    // Leave room when user navigates away
+    window.addEventListener('beforeunload', function() {
+        socket.emit('leave', {
+            item_id: itemId,
+            user_id: currentUserId
+        });
+    });
+});
+</script>
+{% endblock %}

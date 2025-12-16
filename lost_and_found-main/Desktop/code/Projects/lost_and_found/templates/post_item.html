@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Post Lost Item - Lost and Found{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card floating">
+            <div class="card-header">
+                <h3 class="text-center"><i class="fas fa-plus-circle me-2"></i>Post Lost Item</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="item_name" class="form-label fw-bold">Item Name *</label>
+                        <input type="text" class="form-control" id="item_name" name="item_name" required>
+                        <div class="form-text">What item did you lose? Be specific (e.g., "Black Wallet", "iPhone 12")</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="category" class="form-label fw-bold">Category *</label>
+                        <select class="form-select" id="category" name="category" required>
+                            <option value="">Select a category</option>
+                            <option value="electronics">Electronics</option>
+                            <option value="academics">Academics</option>
+                            <option value="keys">Keys</option>
+                            <option value="accessories">Accessories</option>
+                            <option value="others">Others</option>
+                        </select>
+                        <div class="form-text">Select the category that best fits your lost item</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label fw-bold">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                        <div class="form-text">Provide details about the item (color, brand, distinguishing features, etc.)</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="location" class="form-label fw-bold">Location Lost *</label>
+                        <input type="text" class="form-control" id="location" name="location" required>
+                        <div class="form-text">Where did you lose this item? (e.g., Library, Cafeteria, Classroom 101)</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="date" class="form-label fw-bold">Date Lost</label>
+                        <input type="date" class="form-control" id="date" name="date">
+                        <div class="form-text">When did you lose this item?</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="contact_info" class="form-label fw-bold">Contact Information *</label>
+                        <input type="text" class="form-control" id="contact_info" name="contact_info" required>
+                        <div class="form-text">How can someone contact you? (e.g., email, phone number)</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="item_image" class="form-label fw-bold">Item Image *</label>
+                        <input type="file" class="form-control" id="item_image" name="item_image" accept="image/*" required>
+                        <div class="form-text">Upload an image of the lost item (required)</div>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg pulse-button">
+                            <i class="fas fa-paper-plane me-2"></i>Post Lost Item
+                        </button>
+                    </div>
+                </form>
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Back to Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tips Section -->
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8">
+        <div class="card floating">
+            <div class="card-header">
+                <h5><i class="fas fa-lightbulb me-2 text-warning"></i>Tips for Posting</h5>
+            </div>
+            <div class="card-body">
+                <ul>
+                    <li>Be as descriptive as possible about the item</li>
+                    <li>Include specific details like color, brand, and unique markings</li>
+                    <li>Provide accurate location and date information</li>
+                    <li>Include multiple contact methods if possible</li>
+                    <li>Upload a clear image if you have one</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

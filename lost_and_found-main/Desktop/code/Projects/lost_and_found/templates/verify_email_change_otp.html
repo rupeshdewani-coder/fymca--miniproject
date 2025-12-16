@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Verify Email Change OTP - Lost and Found{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-6 mx-auto">
+            <!-- Development OTP Display -->
+            {% if session.current_otp %}
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                <strong>Development Mode:</strong> OTP for testing is: <span class="fw-bold">{{ session.current_otp }}</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endif %}
+            
+            <div class="card floating">
+                <div class="card-header">
+                    <h3 class="text-center"><i class="fas fa-shield-alt me-2"></i>Verify Email Change</h3>
+                </div>
+                <div class="card-body">
+                    <p class="text-center mb-4">Enter the 6-digit OTP sent to your new email address to verify your email change request.</p>
+                    
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="otp" class="form-label fw-bold">OTP</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-key"></i></span>
+                                <input type="text" class="form-control" id="otp" name="otp" placeholder="Enter 6-digit OTP" maxlength="6" required>
+                            </div>
+                            <div class="form-text">OTP is valid for 10 minutes.</div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg pulse-button">
+                                <i class="fas fa-check-circle me-2"></i>Verify OTP
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="text-center mt-3">
+                        <button type="submit" class="btn btn-link" name="resend_otp" formnovalidate>
+                            <i class="fas fa-redo me-1"></i>Resend OTP
+                        </button> | 
+                        <a href="{{ url_for('profile') }}"><i class="fas fa-arrow-left me-1"></i>Cancel</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

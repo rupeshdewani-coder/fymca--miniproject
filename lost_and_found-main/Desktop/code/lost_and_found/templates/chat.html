@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}Chat - {{ item.item_name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Chat</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card floating">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-comments me-2"></i>Chat for "{{ item.item_name }}"
+                </h4>
+                <p class="mb-0">
+                    <small>
+                        Between 
+                        {% if user.id == item.user_id %}
+                            you (owner)
+                        {% else %}
+                            {{ item.poster_name }} (owner)
+                        {% endif %}
+                        and 
+                        {% if user.id == item.claimed_by %}
+                            you (claimer)
+                        {% else %}
+                            {{ item.claimed_by_username or 'claimer' }} (claimer)
+                        {% endif %}
+                    </small>
+                </p>
+            </div>
+            <div class="card-body" style="height: 400px; overflow-y: auto;" id="chatContainer" data-user-id="{{ user.id }}">
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="mb-3 {% if message.sender_id == user.id %}text-end{% endif %}">
+                        <div class="d-inline-block {% if message.sender_id == user.id %}bg-primary text-white{% else %}bg-light{% endif %} rounded p-2" style="max-width: 70%;">
+                            <div class="fw-bold small">
+                                {% if message.sender_id == user.id %}
+                                    You
+                                {% else %}
+                                    {{ message.sender_name }}
+                                {% endif %}
+                                <small class="{% if message.sender_id == user.id %}text-white-50{% else %}text-muted{% endif %}">({{ message.created_at.strftime('%Y-%m-%d %H:%M') }})</small>
+                            </div>
+                            <div>{{ message.message }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center text-muted py-5" id="noMessages">
+                        <i class="fas fa-comment-dots fa-2x mb-3"></i>
+                        <p>No messages yet. Start the conversation!</p>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="card-footer">
+                <form method="POST" action="{{ url_for('send_message', item_id=item.id) }}" id="messageForm">
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="message" placeholder="Type your message..." required id="messageInput">
+                        <button class="btn btn-primary pulse-button" type="submit">
+                            <i class="fas fa-paper-plane"></i> Send
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-3">
+    <div class="col-md-12">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+        </a>
+    </div>
+</div>
+
+<script>
+    // Scroll to bottom of chat container
+    function scrollToBottom() {
+        const chatContainer = document.getElementById('chatContainer');
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+    
+    // Wait for DOM to load
+    document.addEventListener('DOMContentLoaded', function() {
+        scrollToBottom();
+        
+        // Get current user ID from data attribute
+        const chatContainer = document.getElementById('chatContainer');
+        const currentUserId = parseInt(chatContainer.getAttribute('data-user-id'));
+        
+        // Handle form submission with AJAX
+        const messageForm = document.getElementById('messageForm');
+        const messageInput = document.getElementById('messageInput');
+        
+        // Handle Enter key press (without Shift) to submit form
+        messageInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                messageForm.dispatchEvent(new Event('submit'));
+            }
+        });
+        
+        messageForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const message = messageInput.value.trim();
+            if (message) {
+                // Submit form via fetch API
+                fetch(this.action, {
+                    method: 'POST',
+                    body: new FormData(this),
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Clear input and scroll to bottom
+                        messageInput.value = '';
+                        scrollToBottom();
+                    } else {
+                        console.error('Failed to send message');
+                        // Fallback to traditional form submission
+                        this.submit();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Fallback to traditional form submission
+                    this.submit();
+                });
+            }
+        });
+        
+        // SocketIO real-time messaging
+        const socket = io();
+        
+        // Listen for new messages
+        socket.on('new_message', function(data) {
+            // Remove "no messages" placeholder if it exists
+            const noMessagesElement = document.getElementById('noMessages');
+            if (noMessagesElement) {
+                noMessagesElement.remove();
+            }
+            
+            // Create new message element
+            const messageDiv = document.createElement('div');
+            
+            // Set class based on sender
+            if (data.sender_id == currentUserId) {
+                messageDiv.className = 'mb-3 text-end';
+            } else {
+                messageDiv.className = 'mb-3';
+            }
+            
+            const messageContent = document.createElement('div');
+            if (data.sender_id == currentUserId) {
+                messageContent.className = 'd-inline-block bg-primary text-white rounded p-2';
+            } else {
+                messageContent.className = 'd-inline-block bg-light rounded p-2';
+            }
+            messageContent.style.maxWidth = '70%';
+            
+            const messageHeader = document.createElement('div');
+            messageHeader.className = 'fw-bold small';
+            
+            // Format timestamp
+            const timestamp = new Date(data.created_at).toLocaleString();
+            if (data.sender_id == currentUserId) {
+                messageHeader.innerHTML = 'You <small class="opacity-75">(' + timestamp + ')</small>';
+            } else {
+                messageHeader.innerHTML = data.sender_name + ' <small class="opacity-75">(' + timestamp + ')</small>';
+            }
+            
+            const messageText = document.createElement('div');
+            messageText.textContent = data.message;
+            
+            messageContent.appendChild(messageHeader);
+            messageContent.appendChild(messageText);
+            messageDiv.appendChild(messageContent);
+            chatContainer.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            scrollToBottom();
+        });
+    });
+</script>
+{% endblock %}

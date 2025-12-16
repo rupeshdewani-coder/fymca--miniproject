@@ -1,0 +1,608 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Lost and Found{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2 class="fw-bold">Dashboard</h2>
+        <p>Welcome back, {{ user.username }}! Here's an overview of your activity.</p>
+        {% if user.role == 'admin' %}
+        <div class="alert alert-info">
+            <i class="fas fa-user-shield me-2"></i> You have administrator privileges.
+        </div>
+        {% elif user.role == 'main_admin' %}
+        <div class="alert alert-warning">
+            <i class="fas fa-crown me-2"></i> You have main administrator privileges.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card border-start border-4 border-primary h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="text-muted">Items I Found</h4>
+                        <h2 class="fw-bold">{{ my_items|length }}</h2>
+                    </div>
+                    <div class="rounded-circle bg-light-primary d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                        <i class="fas fa-box text-primary"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card border-start border-4 border-success h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="text-muted">Claimed Items</h4>
+                        <h2 class="fw-bold">{{ claimed_items|length }}</h2>
+                    </div>
+                    <div class="rounded-circle bg-light-success d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                        <i class="fas fa-check-circle text-success"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-3">
+        <div class="card h-100 floating">
+            <div class="card-body">
+                <h4 class="card-title">Quick Actions</h4>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{{ url_for('post_item') }}" class="btn btn-primary pulse-button">
+                        <i class="fas fa-plus me-1"></i> Post Lost Item
+                    </a>
+                    <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-search me-1"></i> Browse Items
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <ul class="nav nav-tabs" id="dashboardTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="my-items-tab" data-bs-toggle="tab" data-bs-target="#my-items" type="button" role="tab">
+                    <i class="fas fa-box me-1"></i> Items Found
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="claimed-items-tab" data-bs-toggle="tab" data-bs-target="#claimed-items" type="button" role="tab">
+                    <i class="fas fa-check-circle me-1"></i> Items I've Claimed
+                </button>
+            </li>
+            {% if is_admin(user) %}
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="verification-tab" data-bs-toggle="tab" data-bs-target="#verification" type="button" role="tab">
+                    <i class="fas fa-user-check me-1"></i> Verification
+                </button>
+            </li>
+            {% endif %}
+            {% if is_main_admin(user) %}
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="admin-tab" data-bs-toggle="tab" data-bs-target="#admin" type="button" role="tab">
+                    <i class="fas fa-crown me-1"></i> Admin Management
+                </button>
+            </li>
+            {% endif %}
+        </ul>
+        <div class="tab-content" id="dashboardTabContent">
+            <div class="tab-pane fade show active" id="my-items" role="tabpanel">
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <h4>Items I Found</h4>
+                    <a href="{{ url_for('post_item') }}" class="btn btn-primary pulse-button">
+                        <i class="fas fa-plus me-1"></i> Post New Item
+                    </a>
+                </div>
+                
+                {% if my_items %}
+                <div class="row mt-3" id="myItemsContainer">
+                    {% for item in my_items %}
+                    <div class="col-md-6 mb-3 item-card" data-item-id="{{ item.id }}">
+                        <div class="card h-100">
+                            {% if item.image_url %}
+                            <!-- Handle both old format (with uploads/) and new format (without uploads/) -->
+                            {% if item.image_url.startswith('uploads/') %}
+                            <img src="{{ url_for('static', filename=item.image_url) }}" class="card-img-top" alt="{{ item.item_name }}" style="height: 150px; object-fit: cover;">
+                            {% else %}
+                            <img src="{{ url_for('static', filename='uploads/' + item.image_url) }}" class="card-img-top" alt="{{ item.item_name }}" style="height: 150px; object-fit: cover;">
+                            {% endif %}
+                            {% else %}
+                            <div class="bg-light d-flex align-items-center justify-content-center" style="height: 150px;">
+                                <i class="fas fa-image text-muted" style="font-size: 2rem;"></i>
+                            </div>
+                            {% endif %}
+                            <div class="card-body">
+                                <h5 class="card-title fw-bold">{{ item.item_name }}</h5>
+                                <p class="card-text">{{ item.description[:100] }}{% if item.description|length > 100 %}...{% endif %}</p>
+                                <div class="mb-3">
+                                    <small class="text-muted d-block">
+                                        <i class="fas fa-map-marker-alt me-1"></i> {{ item.location }}
+                                    </small>
+                                    <small class="text-muted d-block">
+                                        <i class="fas fa-calendar-alt me-1"></i> {{ item.date }}
+                                    </small>
+                                    <small class="text-muted d-block">
+                                        <i class="fas fa-clock me-1"></i> Posted on {{ item.created_at.strftime('%Y-%m-%d') }}
+                                    </small>
+                                </div>
+                                <div>
+                                    {% if item.status == 'claimed' %}
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check-circle me-1"></i> Claimed
+                                    </span>
+                                    {% else %}
+                                    <span class="badge bg-warning">
+                                        <i class="fas fa-clock me-1"></i> Not Claimed
+                                    </span>
+                                    {% endif %}
+                                    
+                                    {% if item.recovered %}
+                                    <span class="badge bg-info">
+                                        <i class="fas fa-check me-1"></i> Recovered
+                                    </span>
+                                    {% endif %}
+                                    
+                                    {% if item.status == 'lost' %}
+                                    <span class="badge bg-secondary">
+                                        <i class="fas fa-hourglass-half me-1"></i> Pending Verification
+                                    </span>
+                                    {% elif item.status in ['found', 'claimed', 'resolved'] %}
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check-circle me-1"></i> Verified
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Recovery and Satisfaction Rating Form -->
+                                {% if item.status == 'claimed' and not item.recovered %}
+                                <form method="POST" action="{{ url_for('mark_recovered', item_id=item.id) }}" class="mt-2">
+                                    <button type="submit" class="btn btn-success btn-sm">
+                                        <i class="fas fa-check-circle me-1"></i> Mark as Recovered
+                                    </button>
+                                </form>
+                                {% endif %}
+                                
+                                {% if item.recovered and item.satisfaction_rating is none %}
+                                <form method="POST" action="{{ url_for('rate_satisfaction', item_id=item.id) }}" class="mt-2">
+                                    <div class="d-flex align-items-center">
+                                        <label class="me-2">Satisfaction:</label>
+                                        <select name="rating" class="form-select form-select-sm" style="width: auto;">
+                                            <option value="1">1</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                            <option value="5">5</option>
+                                        </select>
+                                        <button type="submit" class="btn btn-primary btn-sm ms-2">
+                                            <i class="fas fa-star me-1"></i> Rate
+                                        </button>
+                                    </div>
+                                </form>
+                                {% endif %}
+                                
+                                {% if item.satisfaction_rating %}
+                                <div class="mt-2">
+                                    <small class="text-muted">
+                                        Satisfaction: 
+                                        {% for i in range(item.satisfaction_rating) %}
+                                        <i class="fas fa-star text-warning"></i>
+                                        {% endfor %}
+                                        {% for i in range(5 - item.satisfaction_rating) %}
+                                        <i class="far fa-star text-warning"></i>
+                                        {% endfor %}
+                                    </small>
+                                </div>
+                                {% endif %}
+                                
+                                <a href="{{ url_for('item_detail', item_id=item.id) }}" class="btn btn-primary btn-sm mt-2">View Details</a>
+                                {% if is_admin(user) %}
+                                <a href="{{ url_for('chat', item_id=item.id) }}" class="btn btn-success btn-sm mt-2">
+                                    <i class="fas fa-comments me-1"></i> Chat
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="alert alert-info mt-3">
+                    <div class="text-center py-4">
+                        <i class="fas fa-box-open fa-2x mb-3"></i>
+                        <p>You haven't posted any lost items yet.</p>
+                        <a href="{{ url_for('post_item') }}" class="btn btn-primary pulse-button">Post Your First Lost Item</a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="tab-pane fade" id="claimed-items" role="tabpanel">
+                <h4 class="mt-3">Items I've Claimed</h4>
+                
+                {% if claimed_items %}
+                <div class="row mt-3" id="claimedItemsContainer">
+                    {% for item in claimed_items %}
+                    <div class="col-md-6 mb-3 item-card">
+                        <div class="card h-100 floating">
+                            {% if item.image_url %}
+                            <!-- Handle both old format (with uploads/) and new format (without uploads/) -->
+                            {% if item.image_url.startswith('uploads/') %}
+                            <img src="{{ url_for('static', filename=item.image_url) }}" class="card-img-top" alt="{{ item.item_name }}" style="height: 150px; object-fit: cover;">
+                            {% else %}
+                            <img src="{{ url_for('static', filename='uploads/' + item.image_url) }}" class="card-img-top" alt="{{ item.item_name }}" style="height: 150px; object-fit: cover;">
+                            {% endif %}
+                            {% else %}
+                            <div class="bg-light d-flex align-items-center justify-content-center" style="height: 150px;">
+                                <i class="fas fa-image text-muted" style="font-size: 2rem;"></i>
+                            </div>
+                            {% endif %}
+                            <div class="card-body">
+                                <h5 class="card-title fw-bold">{{ item.item_name }}</h5>
+                                <p class="card-text">{{ item.description[:100] }}{% if item.description|length > 100 %}...{% endif %}</p>
+                                <div class="mb-3">
+                                    <small class="text-muted d-block">
+                                        <i class="fas fa-user me-1"></i> Posted by {{ item.poster_name }}
+                                    </small>
+                                    <small class="text-muted d-block">
+                                        <i class="fas fa-map-marker-alt me-1"></i> {{ item.location_lost }}
+                                    </small>
+                                    <small class="text-muted d-block">
+                                        <i class="fas fa-calendar-alt me-1"></i> {{ item.date_lost }}
+                                    </small>
+                                    <small class="text-muted d-block">
+                                        <i class="fas fa-clock me-1"></i> Claimed on {{ item.claimed_at.strftime('%Y-%m-%d') }}
+                                    </small>
+                                </div>
+                                <div>
+                                    {% if item.recovered %}
+                                    <span class="badge bg-info">
+                                        <i class="fas fa-check me-1"></i> Recovered
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                <a href="{{ url_for('item_detail', item_id=item.id) }}" class="btn btn-primary btn-sm">View Details</a>
+                                <a href="{{ url_for('chat', item_id=item.id) }}" class="btn btn-success btn-sm">
+                                    <i class="fas fa-comments me-1"></i> Chat
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="alert alert-info mt-3">
+                    <div class="text-center py-4">
+                        <i class="fas fa-hands-helping fa-2x mb-3"></i>
+                        <p>You haven't claimed any items yet.</p>
+                        <a href="{{ url_for('index') }}" class="btn btn-primary pulse-button">Browse Lost Items</a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            {% if is_admin(user) %}
+            <div class="tab-pane fade" id="verification" role="tabpanel">
+                <h4 class="mt-3">Verification Panel</h4>
+                
+                <div class="d-flex justify-content-end mb-3">
+                    <a href="{{ url_for('monitor_chats') }}" class="btn btn-info">
+                        <i class="fas fa-comments me-1"></i> Monitor Chats
+                    </a>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card" id="user-verification">
+                            <div class="card-header">
+                                <h5><i class="fas fa-user-plus me-2"></i>Users Verification</h5>
+                            </div>
+                            <div class="card-body">
+                                {% if unverified_users %}
+                                <h6>Unverified Users</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Username</th>
+                                                <th>Email</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for u in unverified_users %}
+                                            <tr>
+                                                <td>{{ u.username }}</td>
+                                                <td>{{ u.email }}</td>
+                                                <td>
+                                                    {{ u.phone }}
+                                                    {% if u.phone_verified %}
+                                                    <span class="badge bg-success ms-2">Phone Verified</span>
+                                                    {% else %}
+                                                    <span class="badge bg-warning ms-2">Phone Not Verified</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <form method="POST" action="{{ url_for('verify_user', user_id=u.id) }}" class="d-inline">
+                                                        <button type="submit" class="btn btn-success btn-sm">
+                                                            <i class="fas fa-check me-1"></i> Verify
+                                                        </button>
+                                                    </form>
+                                                    <form method="POST" action="{{ url_for('reject_user', user_id=u.id) }}" class="d-inline">
+                                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to reject this user registration?')">
+                                                            <i class="fas fa-times me-1"></i> Reject
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <div class="text-center py-3">
+                                    <i class="fas fa-user-check fa-2x text-muted mb-2"></i>
+                                    <p class="mb-0">No unverified users</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card" id="item-verification">
+                            <div class="card-header">
+                                <h5><i class="fas fa-box-open me-2"></i>Items Verification</h5>
+                            </div>
+                            <div class="card-body">
+                                {% if unverified_items %}
+                                <h6>Unverified Items</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Item</th>
+                                                <th>Posted by</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for item in unverified_items %}
+                                            <tr>
+                                                <td>{{ item.item_name }}</td>
+                                                <td>{{ item.poster_name }}</td>
+                                                <td>
+                                                    <a href="{{ url_for('item_detail', item_id=item.id) }}" class="btn btn-info btn-sm me-1" target="_blank">
+                                                        <i class="fas fa-eye me-1"></i> View Details
+                                                    </a>
+                                                    <form method="POST" action="{{ url_for('verify_item', item_id=item.id) }}" class="d-inline">
+                                                        <button type="submit" class="btn btn-success btn-sm">
+                                                            <i class="fas fa-check me-1"></i> Verify
+                                                        </button>
+                                                    </form>
+                                                    <form method="POST" action="{{ url_for('reject_item', item_id=item.id) }}" class="d-inline">
+                                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to reject this item?')">
+                                                            <i class="fas fa-times me-1"></i> Reject
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <div class="text-center py-3">
+                                    <i class="fas fa-box-open fa-2x text-muted mb-2"></i>
+                                    <p class="mb-0">No unverified items</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if is_main_admin(user) %}
+            <div class="tab-pane fade" id="admin" role="tabpanel">
+                <h4 class="mt-3">Admin Management</h4>
+                
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-users-cog me-2"></i>Manage Admins</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Username</th>
+                                                <th>Email</th>
+                                                <th>Phone</th>
+                                                <th>Role</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for u in all_users %}
+                                            <tr>
+                                                <td>{{ u.username }}</td>
+                                                <td>{{ u.email }}</td>
+                                                <td>{{ u.phone }}</td>
+                                                <td>
+                                                    {% if u.role == 'main_admin' %}
+                                                    <span class="badge bg-warning">Main Admin</span>
+                                                    {% elif u.role == 'admin' %}
+                                                    <span class="badge bg-info">Admin</span>
+                                                    {% else %}
+                                                    <span class="badge bg-secondary">Student</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if u.role == 'admin' %}
+                                                    <form method="POST" action="{{ url_for('demote_admin', user_id=u.id) }}" class="d-inline">
+                                                        <button type="submit" class="btn btn-warning btn-sm">
+                                                            <i class="fas fa-arrow-down me-1"></i> Demote
+                                                        </button>
+                                                    </form>
+                                                    {% elif u.role == 'student' %}
+                                                    <form method="POST" action="{{ url_for('promote_user', user_id=u.id) }}" class="d-inline">
+                                                        <button type="submit" class="btn btn-success btn-sm">
+                                                            <i class="fas fa-arrow-up me-1"></i> Promote
+                                                        </button>
+                                                    </form>
+                                                    {% endif %}
+                                                    
+                                                    {% if u.role != 'main_admin' %}
+                                                    <form method="POST" action="{{ url_for('remove_user', user_id=u.id) }}" class="d-inline">
+                                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to remove this user?')">
+                                                            <i class="fas fa-trash me-1"></i> Remove
+                                                        </button>
+                                                    </form>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card mt-3">
+                            <div class="card-header">
+                                <h5><i class="fas fa-boxes me-2"></i>Manage Items</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Item Name</th>
+                                                <th>Posted by</th>
+                                                <th>Claimed by</th>
+                                                <th>Status</th>
+                                                <th>Satisfaction</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for item in all_items %}
+                                            <tr>
+                                                <td>{{ item.item_name }}</td>
+                                                <td>{{ item.poster_name }}</td>
+                                                <td>{{ item.claimer_name or 'Not claimed' }}</td>
+                                                <td>
+                                                    {% if item.status == 'resolved' %}
+                                                    <span class="badge bg-success">Recovered</span>
+                                                    {% elif item.status == 'claimed' %}
+                                                    <span class="badge bg-info">Claimed</span>
+                                                    {% else %}
+                                                    <span class="badge bg-warning">Not Claimed</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if item.satisfaction_rating %}
+                                                    <span class="badge bg-primary">{{ item.satisfaction_rating }}/5</span>
+                                                    {% elif item.recovered %}
+                                                    <span class="badge bg-secondary">Pending Rating</span>
+                                                    {% else %}
+                                                    <span class="badge bg-light text-dark">N/A</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <form method="POST" action="{{ url_for('remove_item', item_id=item.id) }}" class="d-inline">
+                                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to remove this item?')">
+                                                            <i class="fas fa-trash me-1"></i> Remove
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Chat Monitoring Section for Main Admin -->
+                        <div class="card mt-3">
+                            <div class="card-header">
+                                <h5><i class="fas fa-eye me-2"></i>Chat Monitoring</h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">Monitor real-time conversations between item owners and claimers.</p>
+                                <a href="{{ url_for('monitor_chats') }}" class="btn btn-primary pulse-button">
+                                    <i class="fas fa-comments me-1"></i> Monitor Chats
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Pending Email/Phone Changes Section -->
+                    <div class="col-md-12 mt-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-sync-alt me-2"></i>Pending User Changes</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <a href="{{ url_for('admin_pending_email_changes') }}" class="btn btn-primary w-100">
+                                            <i class="fas fa-envelope me-2"></i>Review Email Changes
+                                        </a>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <a href="{{ url_for('admin_pending_phone_changes') }}" class="btn btn-success w-100">
+                                            <i class="fas fa-phone me-2"></i>Review Phone Changes
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    // Add animation to item cards when they appear
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+        
+        // Animate item cards when they come into view
+        const itemCards = document.querySelectorAll('.item-card');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+        
+        itemCards.forEach(card => {
+            observer.observe(card);
+        });
+    });
+</script>
+{% endblock %}

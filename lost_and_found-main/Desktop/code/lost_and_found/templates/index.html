@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Lost and Found{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="jumbotron bg-light p-5 rounded mb-4 animated-gradient">
+            <div class="jumbotron-content">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="display-4 fw-bold text-white">Lost & Found</h1>
+                        <p class="lead text-white">Help fellow students find their lost items and claim items you've found.</p>
+                        <p class="text-white">Join our community to make your campus a better place!</p>
+                        {% if not user %}
+                        <a class="btn btn-light btn-lg me-2 pulse-button" href="{{ url_for('register') }}" role="button">Get Started</a>
+                        <a class="btn btn-outline-light btn-lg" href="{{ url_for('login') }}" role="button">Login</a>
+                        {% else %}
+                        <a class="btn btn-light btn-lg pulse-button" href="{{ url_for('post_item') }}" role="button">Post Lost Item</a>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 text-center d-none d-md-block">
+                        <i class="fas fa-search-location text-white floating" style="font-size: 8rem; opacity: 0.7;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Section -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card floating">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse" aria-expanded="true" aria-controls="filterCollapse">
+                        <i class="fas fa-filter me-2"></i>Filter Items
+                    </button>
+                </h5>
+            </div>
+            <div id="filterCollapse" class="collapse show">
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-5">
+                            <label for="category" class="form-label">Category</label>
+                            <select class="form-select" id="category" name="category">
+                                <option value="">All Categories</option>
+                                <option value="electronics" {% if category_filter == 'electronics' %}selected{% endif %}>Electronics</option>
+                                <option value="academics" {% if category_filter == 'academics' %}selected{% endif %}>Academics</option>
+                                <option value="keys" {% if category_filter == 'keys' %}selected{% endif %}>Keys</option>
+                                <option value="accessories" {% if category_filter == 'accessories' %}selected{% endif %}>Accessories</option>
+                                <option value="others" {% if category_filter == 'others' %}selected{% endif %}>Others</option>
+                            </select>
+                        </div>
+                        <div class="col-md-5">
+                            <label for="location" class="form-label">Location</label>
+                            <input type="text" class="form-control" id="location" name="location" placeholder="Enter location" value="{{ location_filter }}">
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <div class="btn-group w-100" role="group">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search me-1"></i>Filter
+                                </button>
+                                <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h2 class="fw-bold">Recently Lost Items</h2>
+    </div>
+    <div class="col-md-6 text-end">
+        {% if user %}
+        <a href="{{ url_for('post_item') }}" class="btn btn-primary pulse-button">
+            <i class="fas fa-plus me-1"></i> Post Lost Item
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+{% if items %}
+<div class="row" id="itemsContainer">
+    {% for item in items %}
+    <div class="col-md-4 mb-4 item-card">
+        <div class="card h-100 floating">
+            {% if item.image_path %}
+            <img src="{{ url_for('static', filename=item.image_path) }}" class="card-img-top" alt="{{ item.item_name }}" style="height: 200px; object-fit: cover;">
+            {% else %}
+            <div class="bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                <i class="fas fa-image text-muted" style="font-size: 3rem;"></i>
+            </div>
+            {% endif %}
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title fw-bold">{{ item.item_name }}</h5>
+                <p class="card-text flex-grow-1">{{ item.description[:100] }}{% if item.description|length > 100 %}...{% endif %}</p>
+                <div class="mb-3">
+                    <small class="text-muted d-block">
+                        <i class="fas fa-tag me-1"></i> {{ item.category|title }}
+                    </small>
+                    <small class="text-muted d-block">
+                        <i class="fas fa-map-marker-alt me-1"></i> {{ item.location_lost }}
+                    </small>
+                    <small class="text-muted d-block">
+                        <i class="fas fa-calendar-alt me-1"></i> {{ item.date_lost }}
+                    </small>
+                    <small class="text-muted d-block">
+                        <i class="fas fa-user me-1"></i> Posted by {{ item.poster_name }}
+                    </small>
+                </div>
+                <div class="mt-auto">
+                    <a href="{{ url_for('item_detail', item_id=item.id) }}" class="btn btn-primary w-100 mb-2">View Details</a>
+                    {% if user and user.id != item.user_id %}
+                    <a href="{{ url_for('claim_item', item_id=item.id) }}" class="btn btn-success w-100"
+                       onclick="return confirm('Are you sure you want to claim this item?')">
+                        <i class="fas fa-check-circle me-1"></i> Claim Item
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="alert alert-info text-center py-5">
+            <i class="fas fa-box-open fa-3x mb-3"></i>
+            <h4>No lost items found</h4>
+            <p class="mb-4">Be the first to post a lost item!</p>
+            {% if user %}
+            <a href="{{ url_for('post_item') }}" class="btn btn-primary btn-lg pulse-button">Post Lost Item</a>
+            {% else %}
+            <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg pulse-button">Register to Post</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Interactive Statistics Section -->
+<div class="row mt-5">
+    <div class="col-md-4 mb-4">
+        <div class="card text-center h-100 floating">
+            <div class="card-body">
+                <i class="fas fa-users fa-2x text-primary mb-3"></i>
+                <h3 class="card-title">150+</h3>
+                <p class="card-text">Active Users</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card text-center h-100 floating">
+            <div class="card-body">
+                <i class="fas fa-check-circle fa-2x text-success mb-3"></i>
+                <h3 class="card-title">85+</h3>
+                <p class="card-text">Items Recovered</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card text-center h-100 floating">
+            <div class="card-body">
+                <i class="fas fa-smile fa-2x text-warning mb-3"></i>
+                <h3 class="card-title">95%</h3>
+                <p class="card-text">User Satisfaction</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- How It Works Section -->
+<div class="row mt-5">
+    <div class="col-md-12">
+        <h2 class="fw-bold text-center mb-4">How It Works</h2>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 text-center floating">
+            <div class="card-body">
+                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 70px; height: 70px;">
+                    <i class="fas fa-user-plus fa-2x"></i>
+                </div>
+                <h5 class="card-title">1. Register</h5>
+                <p class="card-text">Create an account to access all features of our Lost & Found system.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 text-center floating">
+            <div class="card-body">
+                <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 70px; height: 70px;">
+                    <i class="fas fa-plus-circle fa-2x"></i>
+                </div>
+                <h5 class="card-title">2. Post or Find</h5>
+                <p class="card-text">Post lost items or browse items that others have found.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 text-center floating">
+            <div class="card-body">
+                <div class="rounded-circle bg-warning text-white d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 70px; height: 70px;">
+                    <i class="fas fa-handshake fa-2x"></i>
+                </div>
+                <h5 class="card-title">3. Connect & Recover</h5>
+                <p class="card-text">Connect with item owners and help them recover their belongings.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Add animation to item cards when they appear
+    document.addEventListener('DOMContentLoaded', function() {
+        const itemCards = document.querySelectorAll('.item-card');
+        itemCards.forEach((card, index) => {
+            // Add a staggered animation delay
+            setTimeout(() => {
+                card.classList.add('visible');
+            }, 200 * index);
+        });
+    });
+</script>
+{% endblock %}

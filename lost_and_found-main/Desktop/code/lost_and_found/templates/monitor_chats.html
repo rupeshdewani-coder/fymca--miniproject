@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Monitor Chats - Lost and Found{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Monitor Chats</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <h2 class="mb-4">
+            <i class="fas fa-comments me-2"></i>Monitor Chats
+        </h2>
+        <p class="text-muted">View real-time conversations between item owners and claimers.</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        {% if claimed_items %}
+        <div class="accordion" id="chatAccordion">
+            {% for item in claimed_items %}
+            <div class="card mb-3">
+                <div class="card-header" id="heading{{ item.id }}">
+                    <h5 class="mb-0">
+                        <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ item.id }}" aria-expanded="true" aria-controls="collapse{{ item.id }}">
+                            <i class="fas fa-box me-2"></i>{{ item.item_name }}
+                        </button>
+                        <span class="float-end">
+                            <small class="text-muted">
+                                Owner: {{ item.poster_name }} | Claimer: {{ item.claimed_by_username }}
+                            </small>
+                        </span>
+                    </h5>
+                </div>
+                
+                <div id="collapse{{ item.id }}" class="collapse" aria-labelledby="heading{{ item.id }}" data-bs-parent="#chatAccordion">
+                    <div class="card-body">
+                        <div class="chat-container" style="height: 300px; overflow-y: auto;" id="chatContainer{{ item.id }}" data-item-id="{{ item.id }}">
+                            {% if item.messages %}
+                                {% for message in item.messages|reverse %}
+                                <div class="mb-3 {% if message.sender_id == item.user_id %}text-start{% else %}text-end{% endif %}">
+                                    <div class="d-inline-block {% if message.sender_id == item.user_id %}bg-primary text-white{% else %}bg-light{% endif %} rounded p-2" style="max-width: 70%;">
+                                        <div class="fw-bold small">
+                                            {{ message.sender_name }}
+                                            <small class="{% if message.sender_id == item.user_id %}text-white-50{% else %}text-muted{% endif %}">({{ message.created_at[:16].replace('T', ' ') }})</small>
+                                        </div>
+                                        <div>{{ message.message }}</div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="text-center text-muted py-3">
+                                    <i class="fas fa-comment-dots fa-2x mb-2"></i>
+                                    <p>No messages yet.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mt-3">
+                            <a href="{{ url_for('chat', item_id=item.id) }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-external-link-alt me-1"></i> Open Chat
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>No claimed items found.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row mt-3">
+    <div class="col-md-12">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+        </a>
+    </div>
+</div>
+
+<script>
+    // Initialize Socket.IO connection
+    const socket = io();
+    
+    // Listen for new messages
+    socket.on('new_message', function(data) {
+        // Find the chat container for this item
+        const chatContainer = document.querySelector('.chat-container[data-item-id="' + data.item_id + '"]');
+        if (chatContainer) {
+            // Create new message element
+            const messageDiv = document.createElement('div');
+            
+            // Set class based on sender (always text-start for admin monitoring)
+            messageDiv.className = 'mb-3 text-start';
+            
+            const messageContent = document.createElement('div');
+            messageContent.className = 'd-inline-block rounded p-2';
+            messageContent.style.maxWidth = '70%';
+            
+            // Set background color (always light for admin monitoring)
+            messageContent.className += ' bg-light';
+            
+            const messageHeader = document.createElement('div');
+            messageHeader.className = 'fw-bold small';
+            
+            // Format timestamp
+            const timestamp = new Date(data.created_at).toLocaleString();
+            messageHeader.innerHTML = data.sender_name + ' <small class="opacity-75">(' + timestamp + ')</small>';
+            
+            const messageText = document.createElement('div');
+            messageText.textContent = data.message;
+            
+            messageContent.appendChild(messageHeader);
+            messageContent.appendChild(messageText);
+            messageDiv.appendChild(messageContent);
+            chatContainer.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+    });
+    
+    // Auto-scroll chat containers to bottom on load
+    document.addEventListener('DOMContentLoaded', function() {
+        const chatContainers = document.querySelectorAll('.chat-container');
+        chatContainers.forEach(container => {
+            container.scrollTop = container.scrollHeight;
+        });
+    });
+</script>
+{% endblock %}

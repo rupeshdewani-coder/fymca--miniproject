@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>allercheck - Protecting Your Health</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-allergies"></i> allercheck
+            allercheck helps you identify potential allergens in your food through advanced AI technology and comprehensive allergen databases.
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#features">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#nutrition">Nutrition</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#about">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-outline-light ms-2" href="#" id="login-btn">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-light ms-2 text-success" href="#" id="register-btn" style="background-color: white; color: #2e7d32; border-color: white;">Register</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="hero-title">Protect Yourself From Hidden Allergens</h1>
+                    <p class="hero-subtitle">allercheck helps you identify potential allergens in your food through advanced AI technology and comprehensive allergen databases.</p>
+                    <div class="hero-buttons">
+                        <a href="#" class="btn btn-light btn-lg me-3 text-success" id="hero-register-btn" style="background-color: white; color: #2e7d32;">Get Started</a>
+                        <a href="#features" class="btn btn-outline-light btn-lg">Learn More</a>
+                    </div>
+                </div>
+                <div class="col-lg-6 text-center">
+                    <img src="https://images.unsplash.com/photo-1493770348161-369560ae357d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Healthy Food" class="hero-image img-fluid rounded shadow" style="border: 5px solid rgba(255, 255, 255, 0.3); max-height: 500px; object-fit: cover;">
+                    <div class="mt-3">
+                        <p class="text-white fw-bold">Safe & Healthy Food Options</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section py-5" id="features">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="section-title">Powerful Features</h2>
+                <p class="section-subtitle">Everything you need to stay safe from food allergens</p>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card h-100">
+                        <div class="feature-icon">
+                            <i class="fas fa-keyboard fa-2x"></i>
+                        </div>
+                        <h3>Manual Ingredient Check</h3>
+                        <p>Enter or paste ingredients to instantly check for allergens in your food.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card h-100">
+                        <div class="feature-icon">
+                            <i class="fas fa-camera fa-2x"></i>
+                        </div>
+                        <h3>Image Analysis</h3>
+                        <p>Upload a photo of your food for AI-powered allergen detection.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card h-100">
+                        <div class="feature-icon">
+                            <i class="fas fa-history fa-2x"></i>
+                        </div>
+                        <h3>History Tracking</h3>
+                        <p>Keep track of your previous analyses and food safety records.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Nutrition Info Section -->
+    <section class="nutrition-section py-5" id="nutrition">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="section-title">Nutritious Eating with Allergies</h2>
+                <p class="section-subtitle">Balanced nutrition while avoiding allergens</p>
+            </div>
+            
+            <div class="row">
+                <div class="col-lg-6 mb-4">
+                    <div class="nutrition-card">
+                        <h3>Building a Balanced Diet</h3>
+                        <p>Managing food allergies doesn't mean sacrificing nutrition. With careful planning, you can maintain a healthy, balanced diet while avoiding allergens.</p>
+                        <ul>
+                            <li>Focus on whole foods like fruits, vegetables, and lean proteins</li>
+                            <li>Read labels carefully to avoid hidden allergens</li>
+                            <li>Consider consulting with a registered dietitian</li>
+                            <li>Explore allergen-free alternatives</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6 mb-4">
+                    <div class="nutrition-card">
+                        <h3>Common Nutrient Deficiencies</h3>
+                        <p>People with food allergies may be at risk for certain nutrient deficiencies:</p>
+                        <div class="deficiency-grid">
+                            <div class="deficiency-item">
+                                <strong>Calcium/Vitamin D</strong>
+                                <span>From dairy restrictions</span>
+                            </div>
+                            <div class="deficiency-item">
+                                <strong>Protein/Iron</strong>
+                                <span>From egg or meat restrictions</span>
+                            </div>
+                            <div class="deficiency-item">
+                                <strong>B Vitamins</strong>
+                                <span>From grain restrictions</span>
+                            </div>
+                            <div class="deficiency-item">
+                                <strong>Vitamin E</strong>
+                                <span>From nut restrictions</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about-section py-5" id="about">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 mb-4">
+                    <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=500&q=80" alt="Healthy Meal" class="about-image img-fluid rounded">
+                </div>
+                <div class="col-lg-6">
+                    <h2 class="section-title">About allercheck</h2>
+                    <p>allercheck was created to help people with food allergies live safer, healthier lives. Our mission is to provide reliable, easy-to-use tools that empower individuals to make informed decisions about their food choices.</p>
+                    <p>With the rise of processed foods and complex ingredient lists, identifying potential allergens has become increasingly challenging. Our AI-powered platform simplifies this process, giving you peace of mind when it comes to your health.</p>
+                    <div class="stats">
+                        <div class="stat-item">
+                            <span class="stat-number">14</span>
+                            <span class="stat-label">Major Allergens</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">99%</span>
+                            <span class="stat-label">Accuracy Rate</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">10K+</span>
+                            <span class="stat-label">Users Protected</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5><i class="fas fa-allergies"></i> allercheck</h5>
+                    <p>Protecting your health from hidden allergens through technology and education.</p>
+                </div>
+                <div class="col-md-3">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-light">Home</a></li>
+                        <li><a href="#features" class="text-light">Features</a></li>
+                        <li><a href="#nutrition" class="text-light">Nutrition</a></li>
+                        <li><a href="#about" class="text-light">About</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h5>Contact</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-envelope me-2"></i> support@allercheck.com</li>
+                        <li><i class="fas fa-phone me-2"></i> +1 (555) 123-4567</li>
+                    </ul>
+                </div>
+            </div>
+            <hr>
+            <div class="text-center">
+                <p>&copy; 2025 allercheck. All rights reserved. This tool is for informational purposes only.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Login Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-sign-in-alt"></i> Login to Your Account</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="login-form">
+                        <div class="mb-3">
+                            <label for="login-email" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="login-email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="login-password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="login-password" required>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Login</button>
+                        </div>
+                    </form>
+                    <div class="text-center mt-3">
+                        <p>Don't have an account? <a href="#" id="show-register">Register now</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div class="modal fade" id="registerModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-user-plus"></i> Create Your Account</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="registration-form">
+                        <div class="mb-3">
+                            <label for="full-name" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="full-name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="register-email" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="register-email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="register-password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="register-password" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="allergies" class="form-label">Select Your Allergies</label>
+                            <select multiple class="form-select" id="allergies" required>
+                                <option value="peanuts">Peanuts</option>
+                                <option value="tree-nuts">Tree Nuts</option>
+                                <option value="milk">Milk</option>
+                                <option value="eggs">Eggs</option>
+                                <option value="fish">Fish</option>
+                                <option value="shellfish">Shellfish</option>
+                                <option value="soy">Soy</option>
+                                <option value="wheat">Wheat/Gluten</option>
+                                <option value="sesame">Sesame</option>
+                                <option value="mustard">Mustard</option>
+                                <option value="celery">Celery</option>
+                                <option value="sulfites">Sulfites</option>
+                                <option value="lupin">Lupin</option>
+                                <option value="mollusks">Mollusks</option>
+                            </select>
+                            <div class="form-text">Hold Ctrl (Cmd on Mac) to select multiple allergies</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="other-allergies" class="form-label">Other Allergies (Please Specify)</label>
+                            <input type="text" class="form-control" id="other-allergies" placeholder="Enter any other allergies separated by commas">
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Register</button>
+                        </div>
+                        <div id="registration-error" class="alert alert-danger mt-3" style="display: none;"></div>
+                    </form>
+                    <div class="text-center mt-3">
+                        <p>Already have an account? <a href="#" id="show-login">Login now</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="landing.js"></script>
+</body>
+</html>

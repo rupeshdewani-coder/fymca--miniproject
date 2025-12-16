@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}{{ item.item_name }} - Lost and Found{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ item.item_name }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card floating">
+            {% if item.image_path %}
+            <img src="{{ url_for('static', filename=item.image_path) }}" alt="{{ item.item_name }}" class="card-img-top" style="max-height: 400px; object-fit: cover;">
+            {% else %}
+            <div class="bg-light d-flex align-items-center justify-content-center" style="height: 400px;">
+                <i class="fas fa-image text-muted" style="font-size: 5rem;"></i>
+            </div>
+            {% endif %}
+            <div class="card-body">
+                <h2 class="card-title fw-bold">{{ item.item_name }}</h2>
+                <p class="card-text">{{ item.description }}</p>
+                
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <h5 class="fw-bold">Item Details</h5>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+                                <i class="fas fa-map-marker-alt me-2 text-primary"></i>
+                                <strong>Location Lost:</strong> {{ item.location_lost }}
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-calendar-alt me-2 text-primary"></i>
+                                <strong>Date Lost:</strong> {{ item.date_lost }}
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-user me-2 text-primary"></i>
+                                <strong>Posted by:</strong> {{ item.poster_name }}
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-clock me-2 text-primary"></i>
+                                <strong>Posted on:</strong> {{ item.created_at.strftime('%Y-%m-%d') }}
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h5 class="fw-bold">Status</h5>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+                                <i class="fas fa-info-circle me-2 text-primary"></i>
+                                <strong>Current Status:</strong>
+                                {% if item.claimed %}
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check-circle me-1"></i> Claimed
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-warning">
+                                        <i class="fas fa-clock me-1"></i> Not Claimed
+                                    </span>
+                                {% endif %}
+                            </li>
+                            {% if item.claimed and item.claimed_at %}
+                            <li class="list-group-item">
+                                <i class="fas fa-check-circle me-2 text-primary"></i>
+                                <strong>Claimed on:</strong> {{ item.claimed_at.strftime('%Y-%m-%d') }}
+                            </li>
+                            {% endif %}
+                            {% if item.verified %}
+                            <li class="list-group-item">
+                                <i class="fas fa-check-circle me-2 text-primary"></i>
+                                <strong>Verification:</strong> 
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check-circle me-1"></i> Verified
+                                </span>
+                            </li>
+                            {% else %}
+                            <li class="list-group-item">
+                                <i class="fas fa-hourglass-half me-2 text-primary"></i>
+                                <strong>Verification:</strong> 
+                                <span class="badge bg-secondary">
+                                    <i class="fas fa-hourglass-half me-1"></i> Pending
+                                </span>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card floating">
+            <div class="card-header">
+                <h5><i class="fas fa-address-card me-2"></i>Contact Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="bg-light p-3 rounded mb-3">
+                    <p class="mb-0">{{ item.contact_info }}</p>
+                </div>
+                
+                {% if not item.claimed and user and user.id != item.user_id %}
+                <div class="d-grid mb-3">
+                    <a href="{{ url_for('claim_item', item_id=item.id) }}" class="btn btn-success btn-lg pulse-button"
+                       onclick="return confirm('Are you sure you want to claim this item? This will notify the owner.')">
+                        <i class="fas fa-check-circle me-2"></i> Claim This Item
+                    </a>
+                </div>
+                <p class="text-center text-muted">
+                    <small>By claiming this item, you agree to contact the owner and help them recover their property.</small>
+                </p>
+                {% elif item.claimed %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i> This item has already been claimed.
+                </div>
+                {% elif not user %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i> Please <a href="{{ url_for('login') }}">login</a> to claim this item.
+                </div>
+                {% endif %}
+                
+                <!-- Chat button for claimer and owner -->
+                {% if item.claimed and user and (user.id == item.user_id or user.id == item.claimed_by) %}
+                <div class="d-grid mb-3">
+                    <a href="{{ url_for('chat', item_id=item.id) }}" class="btn btn-primary btn-lg pulse-button">
+                        <i class="fas fa-comments me-2"></i> Chat with {% if user.id == item.user_id %}Claimer{% else %}Owner{% endif %}
+                    </a>
+                </div>
+                {% endif %}
+                
+                <!-- Admin options -->
+                {% if user and is_admin(user) %}
+                <div class="card mt-3 floating">
+                    <div class="card-header">
+                        <h5><i class="fas fa-user-shield me-2"></i>Admin Options</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if not item.verified %}
+                        <form method="POST" action="{{ url_for('verify_item', item_id=item.id) }}" class="d-grid mb-2">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-check-circle me-1"></i> Verify Item
+                            </button>
+                        </form>
+                        <form method="POST" action="{{ url_for('reject_item', item_id=item.id) }}" class="d-grid">
+                            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to reject this item?')">
+                                <i class="fas fa-times-circle me-1"></i> Reject Item
+                            </button>
+                        </form>
+                        {% else %}
+                        <p class="text-muted mb-0">This item is verified.</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if user and (user.id == item.user_id or user.username == 'admin') %}
+        <div class="card mt-3 floating">
+            <div class="card-header">
+                <h5><i class="fas fa-cog me-2"></i>Owner Options</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">As the owner of this item, you can manage it from your dashboard.</p>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-primary w-100 pulse-button">Go to Dashboard</a>
+            </div>
+        </div>
+        {% endif %}
+        
+    </div>
+</div>
+
+<div class="row mt-3">
+    <div class="col-md-12">
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Back to Home
+        </a>
+    </div>
+</div>
+{% endblock %}
